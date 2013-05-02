@@ -1,0 +1,5 @@
+config AD_ALL
+	bool "AD: multicasting"
+	help
+	  Shit Happens.
+

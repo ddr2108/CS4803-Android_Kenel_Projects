@@ -1,0 +1,5 @@
+config DM_ALL
+	bool "DM: disk monitor"
+	help
+	  Disk Monitor Happens.
+
