@@ -34,7 +34,7 @@
 
 #include "blk.h"
 
-#define CAP 2800
+#define CAP 3000
 
 EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_remap);
 EXPORT_TRACEPOINT_SYMBOL_GPL(block_rq_remap);

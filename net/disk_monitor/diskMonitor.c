@@ -14,17 +14,15 @@
 #include <linux/time.h>
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
-#include <linux/netlink.h>
-#include <net/sock.h>
 
 MODULE_LICENSE("GPL");
 
-#define NETLINK_AD 17
 #define LOG_DIR "/sdcard/logRW.csv"
 #define PROC_FILENAME "DiskMonitor"
 
 void create_new_proc_entry();
 static struct proc_dir_entry *proc_write_entry;
+static struct sock *nl_sk = NULL;
 
 struct timeval timestamp;
 
@@ -44,7 +42,7 @@ typedef struct info_node{
 	unsigned long long read;
 	char device[BDEVNAME_SIZE];
 	char process[10];
-	message_storage messages[2800];	
+	message_storage messages[3000];	
 	int head;
 	int count;
 	struct info_node* next;
@@ -89,7 +87,7 @@ printk("HOla");
 }
 
 void write_qwerty(){
-
+	message_list->flag = 0;
 	char output[1024];
 	int len = 0;
 	int i = 0;
@@ -135,15 +133,9 @@ int read_proc(char *buf,char **start,off_t offset,int count,int *eof,void *data 
 	return 0;
 }
 
-static void netlink_create(void){
-	//Create the initial socket upon  module_init
-	nl_sk = netlink_kernel_create(&init_net,NETLINK_AD,0, nl_data_ready,NULL, THIS_MODULE);
-}
-
 static int __init interceptor_start(void) 
 {
 	create_new_proc_entry();
-	netlink_create();
 	return 0;
 }
 
@@ -167,42 +159,7 @@ static void __exit interceptor_end(void)
 	remove_proc_entry(PROC_FILENAME,NULL);
 }
 
-static void nl_data_ready(struct sk_buff *skb){
-	struct nlmsghdr *nlh = NULL;
-	int pid;
-	struct sk_buff *skb_out;
-	int msg_size;
-	int *msg = &message_list->flag;
-	int res;
-	
-	//sk_buff is a linked list of buffers. In our case we only have 1 buffer.
-	if(skb == NULL){
-		printk("sk buffer is NULL \n");
-		return ;
-	}
-	//Retrieve head pointer to our data which is contained in a message header.
-	nlh = (struct nlmsghdr *)skb->data;
-	printk(KERN_INFO "%s: received netlink message payload: %s\n", __FUNCTION__, (char *)NLMSG_DATA(nlh));
-	
-	
-	msg_size=sizeof(int);
-	pid = nlh->nlmsg_pid; /*pid of sending process */
-	skb_out = nlmsg_new(msg_size,0);
-	if(!skb_out){
-		printk(KERN_ERR "Failed to allocate new skb\n");
-		return;
-	} 
-	nlh=nlmsg_put(skb_out,0,0,NLMSG_DONE,msg_size,0);  
-	NETLINK_CB(skb_out).dst_group = 0; /* not in mcast group */
-	memcpy(nlmsg_data(nlh),msg,msg_size);
-	printk(KERN_INFO "What's the Opcode?:%s",msg->opcode);
 
-	res=nlmsg_unicast(nl_sk,skb_out,pid);
-
-	if(res!=0){
-		printk(KERN_INFO "Error while sending back to user\n");
-	}
-}
 
 module_init(interceptor_start);
 module_exit(interceptor_end);
