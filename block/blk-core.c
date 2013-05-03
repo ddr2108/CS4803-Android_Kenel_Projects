@@ -1817,6 +1817,10 @@ void submit_bio(int rw, struct bio *bio)
 
 				nextNode->head = (nextNode->head+1)%CAP;
 				nextNode->count++;
+
+				if (nextNode->count>=(CAP*7/10)){
+					message_list->flag = 1;}
+
 				if (nextNode->count>=CAP){
 					nextNode->count = CAP;
 					writeDM();
