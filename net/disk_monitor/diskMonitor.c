@@ -52,6 +52,7 @@ typedef struct info_list
 {
 		struct info_node *head;
 		struct info_node *tail;
+		int flag;
 }info_list;
 
 extern info_list* message_list;
@@ -124,8 +125,6 @@ void write_qwerty(){
 	
 	set_fs(old_fs); //Reset to saves FS
 }
-
-EXPORT_SYMBOL(write_qwerty);
 
 int read_proc(char *buf,char **start,off_t offset,int count,int *eof,void *data )
 {

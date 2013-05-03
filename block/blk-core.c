@@ -40,8 +40,6 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_remap);
 EXPORT_TRACEPOINT_SYMBOL_GPL(block_rq_remap);
 EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_complete);
 
-extern void write_qwerty();
-
 typedef struct message_storage
 {
 	unsigned int written;
@@ -66,6 +64,7 @@ typedef struct info_list
 {
 		struct info_node *head;
 		struct info_node *tail;
+		int flag;
 }info_list;
 
 info_list* message_list = NULL;
@@ -1820,12 +1819,12 @@ void submit_bio(int rw, struct bio *bio)
 				nextNode->count++;
 				if (nextNode->count>=CAP){
 					nextNode->count = CAP;
-					write_qwerty();
+					writeDM();
 					clearDM();
 					//message_list = NULL;
 				}			
 
-				//printk("Process:%s PID:%d - Written:%Lu - Read:%Lu\n", nextNode->somethingGood,nextNode->PID, nextNode->written, nextNode->read);
+				printk("Process:%s PID:%d - Written:%Lu - Read:%Lu\n", nextNode->process,nextNode->PID, nextNode->written, nextNode->read);
 
 			}
 
